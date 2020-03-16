@@ -1,0 +1,5 @@
+{
+  "prev": "click",
+  "next": "click",
+  "carousel": ["scrollLeft", "scrollRight"]
+}

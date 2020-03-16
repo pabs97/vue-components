@@ -1,0 +1,258 @@
+<!--  TODO:
+  - Data Model (picture of what we discussed in lab is in our teams chat)
+  - Reactivity Model
+  - Clean code
+ -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CSG pagination Integration</title>
+    <!-- <link rel='stylesheet' href='pagination.style.css' type='text/css' media='all' /> -->
+  </head>
+  <body>
+
+    <div id='app'>
+      <h1>Pagination Component</h1>
+      <csg-pagination ></csg-pagination>
+      <br>
+      <p>Minimum Requirements:</p>
+      <ul>
+        <li>If current page is 1, then cannot go to previous page </li>
+        <li>If current page is the last page, then cannot go to next page</li>
+        <li>First page and last page are always showing</li>
+        <li>Current page along with previous and next page are always showing</li>
+        <li>Current page is bolded</li>
+        <li>Can click on the page number to change pages</li>
+      </ul>
+    </div>
+
+    <!-- Templates -->
+    <!-- pagination Container -->
+    <script type="text/x-template" id="tpl-pagination">
+      <div class="pagination">
+        <span> Current Page: {{currentPage}}</span><br>
+        <div class="content">
+          <!-- Prev Chevron -->
+          <button
+            :disabled="prevDisabled"
+            class="button button--prev"
+            @click="prev"
+          >
+          </button>
+          <!-- First Page -->
+          <div
+            class="page"
+            v-bind:class="{ 'page--current': pageList[0] === currentPage }"
+            >
+            <a 
+              href="#"
+              page="1"
+              @click="handleNumberClick"
+            >
+              {{pageList[0]}}
+          </a>
+          </div>
+          <!-- Ellipsis -->
+          <div 
+            v-show="currentPage > 3"
+            class="ellipsis"
+          >
+            <span>...</span>
+          </div>
+          <!-- Middle Pages -->
+          <div 
+            class="page"
+            v-for="(page, index) in pageList"
+            v-if="index >= 1 && index < pageList.length - 1 && index >= currentPage - 2 && index <= currentPage"
+            v-bind:class="{ 'page--current': pageList[index] === currentPage }"
+          > 
+            <a
+              href="#"
+              :page="page"
+              @click="handleNumberClick"
+            >
+              {{pageList[index]}}
+            </a>
+          </div>
+          <!-- Ellipsis -->
+          <div 
+            v-show="currentPage + 2 < pageList.length"
+            class="ellipsis"
+          >
+            <span>...</span>
+          </div>
+          <!-- Last Page -->
+          <div 
+            class="page"
+            v-bind:class="{ 'page--current': pageList[pageList.length - 1] === currentPage  }"
+            >
+            <a
+              href="#"
+              :page="pageList.length"
+              @click="handleNumberClick"
+            >
+              {{pageList[pageList.length - 1]}}
+            </a>
+          </div>
+          <!-- Next Chevron -->
+          <button 
+            :disabled="nextDisabled"
+            class="button button--next"
+            @click="next"
+          >
+          </button>
+        </div>
+      </div>
+    </script>
+
+    <!-- ################################################################## -->
+    <script type='text/javascript' src='https://unpkg.com/vue@2.6.10/dist/vue.min.js'></script>
+    <script type='text/javascript' src='https://unpkg.com/vuex@3.0.1/dist/vuex.min.js'></script>
+    <!-- <script type='text/javascript' src='./data/pageList.js'></script> -->
+    <!-- <script type='text/javascript' src='./pagination.vue.js'></script> -->
+    <script>
+
+      // enable VueTools Chrome Extension
+      Vue.config.devtools = true;
+
+  
+
+
+
+      Vue.component("csg-pagination", {
+        template: "#tpl-pagination",
+        props: {
+          pageList: {
+            type: Array,
+            default() {
+              return [
+                1,2,3,4,5,6,7       
+              ];
+            },
+          },
+          currentPage: {
+            type: Number,
+            default: 1,
+          }
+        },       
+        methods: {
+          next(e) {
+            let output = `before ${this.currentPage}`;
+
+            if (this.currentPage < this.pageList.length) {
+              this.currentPage += 1;
+            }
+            
+            output += `\tafter ${this.currentPage}`;
+            console.log(output);
+          },
+          prev(e) {
+            let output = `before ${this.currentPage}`;
+
+            if (this.currentPage > 1) {
+              this.currentPage -= 1;
+            }
+
+            output += `\tafter ${this.currentPage}`;
+            console.log(output);
+          },
+          handleNumberClick(e) {
+            this.currentPage = +e.target.getAttribute('page');
+          },
+        },
+        computed:{
+          prevDisabled(){
+            return this.currentPage === 1;
+          },
+          nextDisabled(){
+            return this.currentPage === this.pageList.length;
+          }
+        }
+      });
+
+      const app = new Vue({
+        el: '#app',
+        data() {
+          return {
+          }
+        }
+      });
+
+
+      //enable VueTools Chrome Extension
+      window.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app.constructor;
+
+    </script>
+    
+
+
+
+
+
+
+
+
+    
+    
+    <style>
+      body{
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 16px;
+      }
+      h1 {
+        font-size: 18px;
+        line-height: 22px;
+      }
+      h2 {
+        font-size: 16px;
+        line-height: 20px;
+      }
+      a{
+        padding: .5rem;
+        border-radius: 0;
+        text-decoration: none;
+        color: black;
+      }
+      .button{
+        cursor: pointer;
+        margin: auto 10px;
+        border: none;
+        background-repeat: no-repeat;
+        width: 20px;
+        height: 20px;
+        background-size: 20px 20px;
+      }
+      .button--prev{
+        background-image: url('./assets/icon-back-lg.svg');
+      }
+      .button--next{
+        background-image: url('./assets/icon-front-lg.svg');
+      }
+      button:disabled {
+        /*  TODO: add disabled icon and remove color */
+        cursor: not-allowed;
+        opacity: .3;
+      }
+      .content{
+        width: max-content;
+        height: 40px;
+        display: flex;
+      }
+      .pagination{
+        width: 230px;
+        height: 40px;
+      }
+      .page{
+        margin: auto;
+      }
+      .page--current{
+        font-weight: 700;
+      }
+      .ellipsis{
+        padding: .5rem;
+        margin: auto;
+      }
+    </style>
+  </body>
+</html>

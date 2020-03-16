@@ -1,0 +1,20 @@
+{
+  "carousel": {
+    "carouselElements": [
+      {}
+    ],
+    "currentIndex": 0,
+    "skipSize": 1,
+    "elementWidth": 50,
+    "containerWidth": 600,
+    "isWrappable": true
+  },
+  "carouselElement": {
+    "elementWidth": 50,
+    "element": {
+      "elementName": "",
+      "elementDescription": "",
+      "elementUrl": ""
+    }
+  }
+}

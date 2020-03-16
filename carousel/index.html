@@ -1,0 +1,355 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CSG Carousel Integration</title>
+    <!-- <link rel='stylesheet' href='carousel.style.css' type='text/css' media='all' /> -->
+  </head>
+  <body>
+
+    <div id='app'>
+      <h1>Carousel Component</h1>
+      <h2>Wrapped Carousel</h2>
+      <p>Minimum Requirements:</p>
+      <ul>
+        <li>Wraps around (Default)</li>
+        <li>Next/Prev scroll the carousel by one element (Default)</li>
+        <li>Content depends on the data provided by consumer</li>
+      </ul>
+      <csg-carousel title="Scroll by element - Wrapped:" :carousel-elements="carouselElements" ></csg-carousel>
+      <br>
+      <h2>Non-wrapped Carousel</h2>
+      <p>Minimum Requirements:</p>
+      <ul>
+        <li>Does not wrap around</li>
+        <li>Next/Prev scroll the carousel by the number of elements displayed ( prop skipSize)</li>
+        <li>Content depends on the data provided by consumer</li>
+      </ul>
+      <csg-carousel :title="title" :carousel-elements="carouselElements" :container-width="containerWidth" :element-width="elementWidth" :skip-size="skipSize" :is-wrappable="isWrappable"></csg-carousel>
+    </div>
+
+
+
+
+
+
+
+
+    <!-- Templates -->
+    <!-- Carousel Container -->
+    <script type="text/x-template" id="tpl-carousel">
+      <div class="carousel" 
+        :style="{ 'width': containerWidth + 'px'}"
+      >
+      <h2>{{ title }} {{ isWrappable }}</h2>
+      <div 
+        class="carousel__container"
+        :style="{ 'width': containerWidth + 'px'}"
+      >
+        <!-- Prev Chevron -->
+        <button 
+          :disabled="prevDisabled"
+          class="button button--prev"
+          @click="prev"
+        >
+        </button>
+        <!-- Carousel Content -->
+        <div class="content">
+          <div 
+            class='content__slider'
+            :style="carouselPosition"
+          >
+            <!-- Carousel Elements -->
+            <csg-carousel-el
+              v-for="element in carouselElements"
+              :element='element'
+              :elementWidth="elementWidth"
+            >
+            </csg-carousel-el>
+          </div>
+        </div>
+        <!-- Prev Chevron -->
+        <button 
+          :disabled="nextDisabled"
+          class="button button--next"
+          @click="next"
+        >
+        </button>
+      </div>
+    </div>
+    </script>
+    <!-- Carousel Element -->
+    <script type="text/x-template" id="tpl-carousel-el">
+      <div
+        class='element'
+        :style="{ 'width': elementWidth + 'px'}"
+      >
+        <div class="element__content">
+          <h4>{{ element.title }}</h4>
+          <img class="element__image" :src='element.imageUrl'>
+          <p> {{ element.description }}</p>
+        </div>
+      </div>
+    </script>
+
+    <!-- ################################################################## -->
+    <script type='text/javascript' src='https://unpkg.com/vue@2.6.10/dist/vue.min.js'></script>
+    <script type='text/javascript' src='https://unpkg.com/vuex@3.0.1/dist/vuex.min.js'></script>
+    <script type='text/javascript' src='./data/carouselElements.js'></script>
+    <!-- <script type='text/javascript' src='./carousel.vue.js'></script> -->
+    <script>
+
+      // enable VueTools Chrome Extension
+      Vue.config.devtools = true;
+
+  
+
+
+
+
+
+
+
+
+      Vue.component("csg-carousel", {
+        template: "#tpl-carousel",
+        props: {
+          title: {
+            type: String,
+            default: ' ',
+          },
+          carouselElements: {
+            type: Array,
+            default() {
+              return [
+                { elementName: 'Siberian Husky'},
+                { elementName: 'Alaskan Malamute'},
+                { elementName: 'German Shepherd'},
+                { elementName: 'Samoyed'},
+                { elementName: 'Husky Puppies'},
+                { elementName: 'Siberian Husky'},
+                { elementName: 'Alaskan Malamute'},
+                { elementName: 'German Shepherd'},
+                { elementName: 'Samoyed'},
+                { elementName: 'Samoyed Puppies'},              
+              ];
+            },
+          },
+          currentIndex: {
+            type: Number,
+            default: 0,
+          },
+          skipSize: {
+            type: Number,
+            default: 1,
+          },
+          elementWidth: {
+            type: Number,
+            default: 110,
+          },
+          containerWidth: {
+            type: Number,
+            default: 600,
+          },
+          isWrappable: {
+            type: Boolean,
+            default: true,
+          },
+        },        
+        methods: {
+          next(e) {
+            let { carouselElements, currentIndex, skipSize } = this;
+            let output = `before ${this.currentIndex}`;
+            
+            if (this.isWrappable) {
+              if (currentIndex + skipSize < carouselElements.length) {
+                this.currentIndex += skipSize;
+              } else {
+                this.currentIndex = 0;
+              }
+
+            } else if ((currentIndex + skipSize) < carouselElements.length - 1) {
+              this.currentIndex += skipSize;
+            }
+
+            output += `\tafter ${this.currentIndex}`;
+            console.log(output);
+          },
+          prev(e) {
+            let { carouselElements, currentIndex, skipSize } = this;
+            let output = `before ${this.currentIndex}`;
+
+            if (this.isWrappable) {
+              if (currentIndex > 0) {
+                this.currentIndex -= skipSize;
+              } else {
+                // TODO: this is broken
+                // 10 1     9           (10-1)/1=   10 * 1 
+                // 10 2     8,9         (10-1)/2=   5 * 2
+                // 10 3     9           (10-1)/3=   3 * 3
+                // 10 4     8,9         (10-1)/4=   2 * 4 = 8
+                // 10 5     5,6,7,8,9   (10-1)/5=   2 * 5 = 10
+                this.currentIndex = Math.floor((carouselElements.length - 1) / skipSize) * skipSize;
+              }
+            } else if (currentIndex > 0) {
+              this.currentIndex -= skipSize;
+            }
+
+            output += `\tafter ${this.currentIndex}`;
+            console.log(output);
+          },
+          carouselPosition55555() {
+            return {
+              left: this.currentIndex * (-this.elementWidth - 12) + 'px',
+            }
+          }
+        },
+        computed: {
+          carouselPosition() {
+            return {
+              left: this.currentIndex * (-this.elementWidth - 12) + 'px',
+            }
+          },
+          prevDisabled() {
+            return !this.isWrappable && this.currentIndex + 1 === 1;
+          },
+          nextDisabled(){
+            return !this.isWrappable && this.currentIndex + this.skipSize >= this.carouselElements.length;
+          }
+        }
+      });
+
+
+
+      Vue.component("csg-carousel-el", {
+        template: "#tpl-carousel-el",
+        props: {
+          // passed from parent component, default is not used
+          elementWidth: {
+            type: Number,
+            default: 50,
+          },
+          element: {
+            type: Object,
+            required: true,
+            default() {
+              return {
+                imageUrl: '', 
+                title: '', 
+                description: ''
+              };
+            },
+          },
+        },
+        data() {
+          return {};
+        },
+        methods: {}
+      });
+
+      const app = new Vue({
+        el: '#app',
+        data() {
+          return {
+            title:"Scroll by 4 - Wrapped:",
+            carouselElements: carouselElementsDataFile2,
+            containerWidth: 1000,
+            // containerWidth: 1500,
+            elementWidth: 210,
+            currentIndex: 0,
+            skipSize: 4,
+            isWrappable: false,
+          }
+        }
+      });
+
+
+      //enable VueTools Chrome Extension
+      window.__VUE_DEVTOOLS_GLOBAL_HOOK__.Vue = app.constructor;
+
+    </script>
+    
+
+
+
+
+
+
+
+
+    
+    
+    <style>
+      body {
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 16px;
+      }
+      h1 {
+        font-size: 18px;
+        line-height: 22px;
+      }
+      h2 {
+        font-size: 16px;
+        line-height: 20px;
+      }
+
+      .button {
+        border: none;
+        background-repeat: no-repeat;
+        background-size: 30px 30px;
+        width: 30px;
+        height: 30px;
+        margin: auto 15px;
+      }
+      .button--prev {
+        background-image: url('./assets/icon-back-lg.svg');
+      }
+      .button--next {
+        background-image: url('./assets/icon-front-lg.svg');
+      }
+      button:disabled {
+        /*  TODO: add disabled icon and remove color */
+        cursor: not-allowed;
+        opacity: .3;
+      }
+      .carousel {
+        border: 2px solid black;
+        width: 450px;
+        height: 350px;
+        text-align: center;
+      }
+      .carousel__container {
+        width: 450px;
+        height: 300px;
+        display: flex;
+      }
+      .content {
+        height: 300px;
+        width: 100%;
+        overflow-x: hidden;
+        margin: auto 0;
+      }
+      .content__slider {
+        width: max-content;
+        height: 100%;
+        position: relative;
+        transition: 1.5s;
+      }
+
+      .element { 
+        height: 95%;
+        margin: 5px;
+        border: 1px solid black;
+        display: inline-flex;
+      }
+      .element__content {
+        margin: 10px;
+      }
+      .element__image {
+        width: 100%;
+        max-width: 200px;
+        height: auto;
+      }
+    </style>
+  </body>
+</html>
